@@ -1,7 +1,7 @@
 ---
 title: <center><FONT COLOR="FF4D00">ANÁLISIS SOBRE LA COVID-19</FONT></center>
-author: "Miembros del grupo: \n\n\n **Ignacio Montava** (monpeig@alumni.uv.es), \n\n **Andreu Esparza** (anesimar@alumni.uv.es) \n\n **Noelia Sánchez** (nosan5@alumni.uv.es) \n\n Universitat de València"
-date: " `r format(Sys.time(), '%d-%m-%Y')`"
+author: "Miembros del grupo:  \n\n **Ignacio Montava** (monpeig@alumni.uv.es), \n\n **Andreu Esparza** (anesimar@alumni.uv.es) y \n\n **Noelia Sánchez** (nosan5@alumni.uv.es) \n\n Universitat de València"
+date: "Diciembre de 2020 (actualizado el `r format(Sys.time(), '%d-%m-%Y')`)"
 output:
   html_document: 
     self_contained: yes
@@ -24,6 +24,7 @@ library(tidyverse)
 library(klippy) 
 library(knitr)
 ```
+
 
 ```{r chunk-setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE, 
@@ -51,10 +52,9 @@ klippy::klippy(position = c("top", "right")) #- remotes::install_github("rlesur/
 <div style="text-align: justify"><div/>
 -----------------
 
-<FONT COLOR="Blue">Trabajo  elaborado para la asignatura "Programación y manejo de datos en la era del Big Data" de la Universitat de València durante el curso 2020-2021. La página web de la asignatura puede verse aquí: <https://perezp44.github.io/intro-ds-20-21-web/>. Los trabajos de mis compañeros de curso pueden verse [aquí](https://perezp44.github.io/intro-ds-20-21-web/07-trabajos.html)</FONT>
+Trabajo  elaborado para la asignatura "Programación y manejo de datos en la era del Big Data" de la Universitat de València durante el curso 2020-2021. La página web de la asignatura puede verse aquí: <https://perezp44.github.io/intro-ds-20-21-web/>. Los trabajos de mis compañeros de curso pueden verse [aquí](https://perezp44.github.io/intro-ds-20-21-web/07-trabajos.html)
 
 ---------------
-**NO ESTÁ ACABADO!**
 
 ## 1. Introducción 
 
@@ -266,6 +266,148 @@ datos_CCAA <- aaa %>%
 datos_CCAA <- datos_CCAA %>% rename("Ingresos Ult.24h" = "Ingresos COVID Ãºltimas 24 h") %>% rename("Altas Ult24h" = "Altas COVID Ãºltimas 24 h")
 ```
 
+```{r pruebas_CCAA}
+library(rio)
+library(tidyverse)
+#link: https://github.com/datadista/datasets/blob/master/COVID%2019/ccaa_covid19_test_realizados.csv
+
+dfp <- rio::import(here::here("datos", "datos_pruebas.xlsx"))
+
+dfa <-dfp %>%
+  separate(Fecha, c("año","mes","dia"), sep = "-") %>%                 relocate(año, .after=dia) %>%
+  relocate(dia, .before =mes) %>% select(!OTROS_TESTS) %>% select(!OTROS_TESTS_x_1000hab.)
+
+dfCCAA <- dfa %>% filter(CCAA != "España")
+
+#Exporto los datos para poder empezar el análisis desde aquí.
+#rio::export(dfCCAA, here::here("datos", "dfCCAA.csv"))
+
+dfCCAA <- rio::import(here::here("datos", "dfCCAA.csv"))
+
+dfCCAA <- dfCCAA %>% select(!CCAA)
+dfCCAA <- dfCCAA %>% mutate(CCAA = case_when(
+  cod_ine == 1 ~ "Andalucia",
+  cod_ine == 2 ~ "Aragon",
+  cod_ine == 3 ~ "Asturias",
+  cod_ine == 4 ~ "I.Baleares",
+  cod_ine == 5 ~ "Canarias",
+  cod_ine == 6 ~ "Cantabria",
+  cod_ine == 7 ~ "Castilla Leon",
+  cod_ine == 8 ~ "Castilla La Mancha",
+  cod_ine == 9 ~ "Cataluña",
+  cod_ine == 10 ~ "C.Valenciana",
+  cod_ine == 11 ~ "Extremadura",
+  cod_ine == 12 ~ "Galicia",
+  cod_ine == 13 ~ "Madrid",
+  cod_ine == 14 ~ "Murcia",
+  cod_ine == 15 ~ "Navarra",
+  cod_ine == 16 ~ "Pais Vasco",
+  cod_ine == 17 ~ "La Rioja",
+  cod_ine == 18 ~ "Ceuta",
+  cod_ine == 19 ~ "Melilla",
+)) %>% relocate(CCAA, .after=cod_ine)
+```
+```{r PROVINCIAS}
+library(rio)
+library(tidyverse)
+
+dfPROV <- rio::import(here::here("datos", "dfTrel.csv"))
+
+dfPROV <- mutate(dfPROV %>% mutate(Cod = case_when(
+     provincia == "Alava" ~ "01",
+     provincia == "Albacete" ~ "02",
+     provincia == "Alicante" ~ "03",
+     provincia == "Almeria" ~ "04",
+     provincia == "Avila" ~ "05",
+     provincia == "Badajoz" ~ "06",
+     provincia == "Islas Baleares" ~ "07",
+     provincia == "Barcelona" ~ "08",
+     provincia == "Burgos" ~ "09",
+     provincia == "Caceres" ~ "10",
+     provincia == "Cadiz" ~ "11",
+     provincia == "Castellon" ~ "12",
+     provincia == "Ciudad Real" ~ "13",
+     provincia == "Cordoba" ~ "14",
+     provincia == "A Coruña" ~ "15",
+     provincia == "Cuenca" ~ "16",
+     provincia == "Girona" ~ "17",
+     provincia == "Granada" ~ "18",
+     provincia == "Guadalajara" ~ "19",
+     provincia == "Guipuzcoa" ~ "20",
+     provincia == "Huelva" ~ "21",
+     provincia == "Huesca" ~ "22",
+     provincia == "Jaen" ~ "23",
+     provincia == "Leon" ~ "24",
+     provincia == "Lleida" ~ "25",
+     provincia == "La Rioja" ~ "26",
+     provincia == "Lugo" ~ "27",
+     provincia == "Madrid" ~ "28",
+     provincia == "Malaga" ~ "29",
+     provincia == "Murcia" ~ "30",
+     provincia == "Navarra" ~ "31",
+     provincia == "Ourense" ~ "32",
+     provincia == "Asturias" ~ "33",
+     provincia == "Palencia" ~ "34",
+     provincia == "Las Palmas" ~ "35",
+     provincia == "Pontevedra" ~ "36",
+     provincia == "Salamanca" ~ "37",
+     provincia == "Tenerife" ~ "38",
+     provincia == "Cantabria" ~ "39",
+     provincia == "Segovia" ~ "40",
+     provincia == "Sevilla" ~ "41",
+     provincia == "Soria" ~ "42",
+     provincia == "Tarragona" ~ "43",
+     provincia == "Teruel" ~ "44",
+     provincia == "Toledo" ~ "45",
+     provincia == "Valencia" ~ "46",
+     provincia == "Valladolid" ~ "47",
+     provincia == "Bizkaia" ~ "48",
+     provincia == "Zamora" ~ "49",
+     provincia == "Zaragoza" ~ "50",
+     provincia == "Ceuta" ~ "51",
+     provincia == "Melilla" ~ "52")))
+
+dfPROV <- dfPROV %>% select(provincia, Cod, Poblacion, Total, Totalxcap) %>% arrange(Cod)
+```
+
+```{r}
+#Preparando los datos para el análisis de las provincias
+library(tidyverse)
+
+df_prov <- rio::import(here::here("datos", "datos_provincias.csv"))
+
+df_prov <- df_prov %>% separate(fecha, c("dia","mes","año"), sep = "--")
+
+df_prov <- df_prov %>% select(provincia_iso, provincia, dia, mes, año, num_casos)
+
+library(rio)
+
+rio::export(df_prov, here::here("datos", "datos_provinciasok.csv"))
+
+df <- rio::import(here::here("datos", "datos_provinciasok.csv"))
+
+dfg <- df %>% select(-provincia_iso) %>% select(-año)
+
+dfhab <- rio::import(here::here("datos", "excel_hab_prov.xlsx"))
+
+tabla <- full_join(dfg, dfhab, by = c("provincia" = "Provincia"))
+
+dfgg <- tabla %>% group_by(provincia, mes, Poblacion) %>% summarise(Num = sum(num_casos))
+
+dfgg <- dfgg %>% select(provincia, Poblacion, mes, Num)
+
+
+dfrel <- dfgg %>% mutate(Total_cap = (Num/Poblacion))
+dfT <- dfgg %>% group_by(provincia, Poblacion) %>% summarise(Total = sum(mes, Num))
+
+dfTrel <- dfT %>% mutate(Totalxcap = (Total/Poblacion))
+
+unique(dfTrel$provincia)
+dfTrel$provincia <- gsub("Santa Cruz de Tenerife", "Tenerife",dfTrel$provincia)
+
+rio::export(dfTrel, here::here("datos", "dfTrel.csv"))
+```
+
 
 ##  4. Estudio sobre los **Datos del MUNDO**
 
@@ -282,8 +424,9 @@ dfmax2 <- df %>% slice_max(Recovered, n=1) #El máximo de recuperados está en I
 
 df_min1 <- df %>% slice_min(Confirmed, n=1) #El país con menos contagios es Vanuatu (es un país Oceania)
 
-#https://www.europapress.es/internacional/noticia-isla-vanuatu-confirma-primer-caso-coronavirus-20201111101020.html <- Podemos poner esta notícia !!
+```
 
+```{r}
 #TABLA PARA EL PAÍS CON MENOS CONATGIOS.
 
 Imagen <- "http://banderasmundo.es/wp-content/uploads/2017/09/vanuatu.png"
@@ -305,6 +448,10 @@ Tabla_Pmencotag <- Tabla_Pmencotag  %>%
   gt::text_transform(locations = cells_body(columns = vars(Imagen)), fn = function(x) {gt::web_image(x, height = 50)}) %>%  cols_align(
     align = "center")
 
+#Lo mismo hacemos para las otras tres tablas
+```
+
+```{r echo=FALSE, eval=TRUE}
 
 #TABLA PARA EL PAÍS CON MÁS CONTAGIOS:
 
@@ -363,22 +510,23 @@ Tabla_Pmascotag
 
 
 <br>
-<center><FONT COLOR="Blue">**¿CUÁL ES EL PAÍS CON MENOS CONTAGIOS?**</FONT></center>
-
-<br>
-```{r echo = FALSE, eval = TRUE}
-Tabla_Pmencotag
-```
-
-
-<br>
 <center><FONT COLOR="Blue">**¿EN QUÉ PAÍS HAY MÁS PERSONAS RECUPERADAS?**</FONT></center>
 <br>
 ```{r echo = FALSE, eval = TRUE}
 Tabla_Pmasrecu
 ```
 
+<br>
+<center><FONT COLOR="Blue">**¿CUÁL ES EL PAÍS CON MENOS CONTAGIOS?**</FONT></center>
+<br>
+```{r echo = FALSE, eval = TRUE}
+Tabla_Pmencotag
+```
 
+
+El país más afectado hoy en día por la pandemia es Estados Unidos, como podremos confirmar a lo largo del análisis. Además, India pese a que tiene un gran número de recuperados (en la fecha indicada en la tabla) no deja de tener contagiados y su cifra va en aumento. 
+
+Filtrando los datos extraidos del repositorio de Github Covid-19, hemos obtenido que el país con menos contagios es Vanuatu, un país insular de Ocenia, que en estos momentos tiene solo 1 persona confirmada de coronavirus, por lo que es el país con menos casos hasta el momento. (Además, cabe tener en cuenta que esta isla cuenta con muy poca población (292.680 habitantes))
 
 
 ### 4.2 Los 10 países con más casos de Coronavirus, ¿Cuáles son?
@@ -456,6 +604,12 @@ a <- ggplot(covid)+
         height = 600,
         type = "cairo")
 ```
+
+Con el anterior gráfico pretendemos mostrar la evolución de los casos positivos en coronavirus, mostrando los 10 países que se encuentran en el "top". Estos datos van desde incioos de enero hasta principios de diciembre (año 2020)
+
+Observamos que China es el primer país en tener positivos en coronavirus, como sabemos Wuhan fue el lugar donde se detectó el primer positivo. El coronavirus se propaga rapidamente por todo el mundo y vemos a través del gráfico que Italia y España rapidamente pasan a tener un número elevado de contagios, el cual es superado por Estados Unidos en marzo, donde los casos crecen de manera exponencial.
+
+Los últimos datos mostrados indican que India, Brasil y Rusia se situan en la segunda, tercera y cuarta posición respectivamente en contagios. En decima posición se encuentra México con 1.144.643 de casos acumulados.
 
 ### 4.3 Evolución de los contagios (a nivel mundial)
 
@@ -559,7 +713,7 @@ es diferente ya que **la curva es siempre ascendente** y no ofrece cambios extre
 #remotes::install_github("joachim-gassen/tidycovid19")
 library(tidycovid19)
 
-install.packages("maps")
+#install.packages("maps")
 library(lubridate)
 
 merged <- download_merged_data(cached = TRUE, silent = TRUE)
@@ -590,7 +744,7 @@ En el gráfico anterior se contrasta lo que se ha comentado anteriormente. **El 
 
 Por otra parte tenemos a **España** y **Sud-Africa**, sus gráficos si muestran las famosas olas donde los casos aumentaban paro luego se reducian. Concretamente en el caso de España se pueden ver como hacia el final, meses más recientes,  vuelven a aparecer tonos mas verdosos lo que significa que los casos han disminuido, en comparación con los meses de marzo-abril.
 
-El país restante es **Chin**a donde según los datos que tenemos la Pandemia esta controlada ya que los valores son infimos para la población que tiene el gigante asiático. Además, se observa que al principio de la crisi sanitaria presentaba más casos que el resto de países analizados (en este gráfico)
+El país restante es **China** donde según los datos que tenemos la Pandemia esta controlada ya que los valores son infimos para la población que tiene el gigante asiático. Además, se observa que al principio de la crisi sanitaria presentaba más casos que el resto de países analizados (en este gráfico)
 
 <br>
 
@@ -617,6 +771,9 @@ knitr::include_graphics(here::here("imagenes", "Muertes_diarias.png"))
 ```
 <a href="./imagenes/Muertes_diarias.png" target="_blank">[Ampliar Imagen]</a>
 
+Este mapa nos muestra la variación de muertes por 100 mil habitantes en un promedio de 7 días.  Los datos son de la semana del 7 de diciembre. 
+En este mapa, se puede recalcar que la zona más afectada por muertes por COVID es el centro de Europa, donde podríamos destacar países como Italia, Eslovenia o Bulgaria. Otro de los países más afectados por el coronavirus sin duda es Estados Unidos donde destaca tanto en muertes, como en contagios.
+También se puede ver que los países donde menos muertes por 100 mil habitantes están habiendo, son países de África, Oceanía y parte de Asia.
 
 
 ```{r echo = TRUE, eval = FALSE}
@@ -641,6 +798,47 @@ knitr::include_graphics(here::here("imagenes", "Casosconfirmados.png"))
 ```
 <a href="./imagenes/Casosconfirmados.png" target="_blank">[Ampliar Imagen]</a>
 
+Este mapa nos muestra la variación de casos confirmados por 100 mil habitantes en un promedio de 7 días.  Los datos so de la semana del 7 de diciembre. 
+
+Como podemos observar, las zonas donde menos casos se confirman son en zonas de África (hay que tener en cuenta que se realizan menos pruebas que en el resto de los continentes) Por otro lado, hay otras zonas como Australia y parte de Asia donde también hay pocos contagios confirmados. 
+
+Las zonas más afectadas serían zonas de Europa, Rusia y Estados Unidos.
+
+```{r}
+
+#remotes::install_github("joachim-gassen/tidycovid19")
+library(ggplot2)
+library(tidyverse)
+library(tidycovid19)
+
+dfz <- download_merged_data(silent = TRUE, cached = TRUE)
+
+dfz <- dfz %>% group_by(iso3c) %>% summarise(
+    confirmed_cases = max(confirmed, na.rm = TRUE),
+    soc_dist_measures = max(soc_dist)
+  ) %>% filter(confirmed_cases >= 1000)
+
+DF <- dfz %>% arrange(desc(confirmed_cases))
+
+DF <- dfz %>% slice_max(confirmed_cases, n=20)%>% slice(-7)
+
+ggplot(DF, aes(x = confirmed_cases, y = soc_dist_measures, color = iso3c)) + geom_point() +
+scale_x_continuous(trans='log10', labels = scales::comma) +
+ggrepel::geom_label_repel(ggplot2::aes(label = iso3c)) + labs(title = "RELACIÓN ENTRE LOS CASOS CONFIRMADOS Y LAS MEDIDAS TOMADAS",
+subtitle = "Relación hecha para los 20 países con más contagios" ,caption = "Datosdel repositorio de Github de CSSE de la Uni.
+Johns Hopkins. Paquete <<tidycovid19>>", y = "Medidas distancia social", x = "Casos confirmados") +
+theme_bw() +  theme(legend.position = "none") +  theme(plot.title = element_text(hjust = 0.5)) +  theme(plot.subtitle = element_text(hjust = 0.5))
+```
+En este gráfico se muestra la relación existente entre el número de casos (contagios) y el número de medidas de distanciamiento social aplicadas en cada uno de los países de la muestra (netos de restricciones levantadas)
+
+Se encargan de recopilar estos datos ACAPS, un proyecto no gubernamental. [^3]
+
+En este caso se muestra el número de medidas de distanciamiento social informadas hasta la fecha por ACAPS, neto de restricciones levantadas. Todo y que también se puede ver la relación con otras medidas que recoge este proyecto, tales como el número de medidas sociales y económicas o de reestricciones de movimiento, etc. 
+
+De acuerdo con el gráfico, observamos que el país del mundo con más contagios actualmente, Estados Unidos, ha aplicado un nivel de medidas de distancia social muy bajo, en comparación con otros países, como en Gran Bretaña, donde Boris Johnson se ha visto obligado a imponer  reglas de distanciamiento social dado la desbordada situación en la que se encontraba. Teniendo en cuenta además, que al inicio de la pandemia evitó poner medidas drásticas, todo y que su estratégia tuvo que cambiar al ver que el virus estaba cogiendo fuerza en su país.
+
+España se encuentra a día de hoy con 1,73 M de casos acumulados, las estrategias para reducir el contagio se han basado principalmente en reducir la movilidad de las personas, por ello, el 13 de marzo se declaró el Estado de Alarma con confinamiento domiciliario. Esta primera cuarentena se levantó el pasado 21 de junio, con una reducción considerable de los casos. Todo y que ha aumentado en los meses posteriores, haciendo referencia a la "segunda ola" (o incluso, algunos hablan de una "tercera ola")
+
 ### 4.4 Evolución de los fallecidos (a nivel mundial)
 
 
@@ -648,7 +846,7 @@ knitr::include_graphics(here::here("imagenes", "Casosconfirmados.png"))
 library(gganimate)
 library(plotly)
 
-graficoM <- ggplot(muertes_dia , aes(Dia , Daily_Deaths,  color= Mes))  + geom_line() + 
+graficoM <- ggplot(muertes_dia , aes(Dia , Daily_Deaths,  color= Mes))  + geom_line() + geom_point() +
   labs(title = "Evolución de muertes al día en el mundo por Covid",
     subtitle = "Desde el 24 de Enero hasta el 31 de Octubre", caption = "Elaboración propia con datos 
     del repositorio COVID19",
@@ -657,18 +855,39 @@ graficoM <- ggplot(muertes_dia , aes(Dia , Daily_Deaths,  color= Mes))  + geom_l
   facet_wrap(~facet, nrow = 4, ncol = 3)  + transition_reveal(Dia)
 ```
 
+En el siguiente conjunto de gráficos observamos la evolución de las muertes por Covid en todo el mundo.
 
 ```{r echo= FALSE, eval = TRUE, out.width="80%"}
 graficoM
 ```
 
+Como podemos observar es a partir del tercer mes, el mes de Marzo cuando las muertes empiezan a ser significativas llegando al máximo total en Abril donde rozaron las 8000 muertes en un dÍa. A partir de ahí y en vista de los gráficos observamos que las cifras tienen tendencias muy parecidas, es decir, se mantiene bastante constante el número de fallecidos diarios y fluctua entre los 6000 y los 4000 muertos diarios continuando esta tendencia hasta el mes de Octubre. 
+
+Cabe añadir la aclaración de que aquí se representan el número de fallecidos a escala mundial y que dentro de cada país hay diferencias, puede ser que en un país haya disminuido el número de muertes diarias, mientras que en otro haya aumentado. Además, aquí no podemos considerar primera ola y/o segunda ola, dado que en cada país la evolución de la pandemía ha sido un tanto diferente, como hemos podido comprobar anteriormente con cuatro países y sus respectivas curvas.
+
 ##  5. Conclusiones sobre los "Datos del Mundo". {.tabset}
 
 ### <FONT COLOR="FF4D00">**Conclusiones**</FONT>
 
-Mientras que ponemos los gráficos, tablas etc, podemos ir comentando los resultados que hemos obtenido. 
+En esta primera sección se ha pretendido analizar la Covid-19, a nivel mundial.
+Como conclusiones, podemos extraer que la pandemia se está (o ya se ha) expandido rapidamente por todo el mundo.
 
-Y aquí poner como las dos o tres ideas más importantes que hemos obtenido al hacer el estudio con los "datos del Mundo" 
+A través de los diferentes gráficos hemos podido comprobar como la pandemía está fuera de control en Estados Unidos, siendo el país líder con más contagios. A este le siguen (a día de hoy), la India, Brasil y Rusia.
+
+Asimismo, como curiosidad cabe destacar qeu el país con menos contagios a día 1/12 (2020) es Vanautu, una isla de Oceania, que presenta tan solo 1 caso.
+
+Por otra parte pretendemos mostrar como ha afectado la pandemia en diferentes países, por ello hemos cogido EEUU, Portugal, Japón y Nigeria y hemos hecho una serie de gráfico, en los cuales podemos los diferentes casos por Covid que hay al día. En el caso de EEUU y Japón se observara dos picos claros.
+
+A diferencia de Nigeria, por ejemplo, donde además de valores más bajos por el
+momento se puede considerar que ha habido solo "una ola". En el caso de Portugal, en la segunda ola hay un aumento de los contagios.
+
+Utilizando el paquete Tidycovid19 nos ha permitido mostrar de manera rápida y sencilla el número de casos diarios en diferentes países, donde se confirma que en China los casos eran más abundantes al principio de la pandemia.
+
+De igual modo, con este paquete hemos hecho dos mapas, uno de la variación de las muertes por cada 100 mil habitantes e igual para el número de casos, donde se confirma también lo comentado previamente. (Además,  podemos observar que el continente oceánico y africano son los que menos casos y muertes presentan)
+
+Por último, con el fin de mostrar la evolución de los fallecidos hemos hecho un gráfico, en el cual se observa como en marzo la tendencia era alcista, mientras en los meses restantes parece oscilar en las mismas cifras, un nivel alto y preocupante.
+
+(Para ver los casos, muertes y recuperados de manera dinámica podemos ver el [LiveMap])
 
 ### <FONT COLOR="FF4D00">**Live Map**</FONT> 
 
@@ -695,8 +914,6 @@ data <-data %>%
 ```{r out.width="100%", eval = TRUE, echo= FALSE}
 live.map(data, title = "CORONAVIRUS EN EL MUNDO", no.legend = TRUE)
 ```
-
-
 
 
 ## 6. Estudio sobre los **datos de ESPAÑA**
@@ -752,7 +969,7 @@ reactable(Union, defaultPageSize =  10,  paginationType = "jump", showPageSizeOp
 ```
 *Hay que tener en cuenta que a partir de julio los datos en fin de semana tienen un valor de 0, no obstante, deberían obviarse al consultar los datos en la tabla, ya que no resultan coherentes.  
 
-A partir de los datos representados en la tabla anteror, hemos hecho el siguiente gráfico, en él se muestra la evolución de los contagios de Covid en España desde enero hasta junio [^3]
+A partir de los datos representados en la tabla anteror, hemos hecho el siguiente gráfico, en él se muestra la evolución de los contagios de Covid en España desde enero hasta junio [^4]
 
 Podemos observar, por tanto,  la "curva" de la <FONT COLOR="FF4D00">**Primera OLA**</FONT>
 
@@ -798,6 +1015,9 @@ Esta representado de la siguiente manera: En el eje de las ordenadas se meustra 
 
 </div>
 
+<br>
+Asimismo, cabe hacer una interpretación de los resultados obtenidos de manera que, como podemos observar en el gráfico el aumento en el mes de Marzo es increíble pasando de los 0 casos a cerca de 10000 positivos en un solo día, a raíz de este aumento tan marcado, el gobierno decidió aplicar un conjunto de medidas entre las que estaba el confinamiento domiciliario para toda la población y que como podemos observar tuvo bastante efecto, ya que el número de contagios descendió de manera considerable en Abril. Es cierto, no obstante, que en este mismo mes se dieron diversos picos de contagios pero la tendencia a partir de este mes, Abril, fue la reducción de los casos, acabándose de confirmar con la tendencia en Mayo y en Junio  obteniendo valores de contagios muy reducidos en comparación con meses previos. 
+
 ### 6.2 Saturación del sistema sanitario español
 
 En este apartado se analizará la **evolución** de los **pacientes  ingresados por Covid durante las últimas 24 horas en los meses de septiembre-octubre y noviembre**. Así como los dados de alta al día, también durante estos meses.
@@ -831,6 +1051,9 @@ grafico_1 <- ggplot(datos_Esp_S_N , aes(Dia , `Total Pacientes COVID ingresados`
 grafico_1
 ```
 
+En el anterior gráfico vemos tres líneas que muestran los datos referentes a los pacientes ingresados por Covid-19 en España en los meses de Septiembre(09) Octubre(10) y Noviembre(11). 
+
+Estos meses agrupan lo que ha sido la **segunda ola**. Dado que observamos un aumento mantenido en Septiembre (del nivel de ingreso hospitalario por Covid), que a mediados de Octubre aumenta de manera muy pronunciada, casi duplicando la que había al principio del mes. En Noviembre, representado por la línea azul, observamos que primeramente los ingresos continúan aumentando, pero a vemos que la tendencia a partir del día 10 empiezan a disminuir, pasando de un máximo de mas de 20000 a menos de 15000 en a penas 15 días. Y situandose a finales de mes, en un nivel más bajo que los ingresados que habían en estos días un mes antes, en octubre.
 
 ```{r}
 grafico_a <- ggplot(datos_Esp_N, aes(Dia, `Altas Ult24h`,   fill = Mes )) +  scale_fill_brewer(palette="Spectral") + geom_bar(stat = "identity")+ 
@@ -844,10 +1067,12 @@ grafico_ap <- grafico_a +
 ```
 
 
-
 ```{r out.width="70%", echo = FALSE, eval= TRUE}
 grafico_ap
 ```
+
+Durante el mes de Noviembre vemos que el numero de pacientes dados de alta es bastante elevado, los días que la cifra se reduce coincide con los Domingos de cada mes, dado que estos días, por lo general, el número de altas suele ser menor.
+Además al venir de una situación de muchos positivos no es de extrañar que el número de altas ronde una cifra de 2000 altas diarias.
 
 ```{r}
 #Preparamos los datos para hacer una TABLA
@@ -859,13 +1084,816 @@ datos_CCAA_yaltas <- datos_CCAA_yaltas %>% select(Dia, Mes, CCAA, `Total Pacient
 ```
 
 ```{r echo = FALSE, eval = TRUE}
+
 DT::datatable(datos_CCAA_yaltas, filter = 'top',
               options = list(pageLength = 10 , autoWidth = TRUE ))
 ```
 
-## 7. Conclusión
+### 6.3 Pruebas realizadas en las CCAA
+
+**¿Cuántas PCR's se han hecho por cada mil habitantes?**
+
+Corresponden a los últimos datos disponibles.
+Asimismo, las Comunidades Autónomas con un mayor tamaño, son aquellas en las que se realizaron más pruebas por cada 100mil habitantes. (Los datos son acumulados)
+
+```{r  out.width = "60%"}
+library(wordcloud2)
+
+dfCCAAp <- dfCCAA %>% select(dia, mes, CCAA, PCR_x_1000hab.) %>% filter(dia == "5") %>% filter(mes == "11") %>% arrange(desc(PCR_x_1000hab.))
+dfCCAAp <- dfCCAAp %>% select(CCAA, PCR_x_1000hab.)
+
+wordcloud2(data = dfCCAAp, size = 0.4)
+```
+
+Ahora vamos a verlo mediante gráficos, así podremos ver las PCR's acumuladas en total y las realizadas para cada 1000habitantes. 
+
+```{r}
+PruebasP <- ggplot(dfCCAA, aes(mes, PCR_x_1000hab., fill = CCAA)) + geom_col(position = "dodge")
+
+PCRs <- PruebasP +  facet_wrap(vars(CCAA)) + labs(x = "Mes", y = "Núm. pruebas PCR", title = "PCR's al mes por cada mil hab.", caption = "Datos obtenidos de Datadista")  + theme_bw() + scale_y_continuous(labels=function(n){format(n, scientific = FALSE)}) + theme(legend.position = "none") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+graficoB <- ggplot(dfCCAA, aes(mes, PCR, fill = CCAA)) + geom_col(position = "dodge")
+
+b <- graficoB +  facet_wrap(vars(CCAA)) + labs(x = "Mes", y = "Núm. pruebas PCR", title = "PCR's mensuales") + theme_bw() + scale_y_continuous(labels=function(n){format(n, scientific = FALSE)}) + theme(legend.position = "none") + theme(plot.title = element_text(hjust = 0.5))
+#Ahora con el paquete patchwork juntamos los dos gráficos
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="90%"}
+b + PCRs
+```
+
+En este caso hemos ajustadao la escala de x para que coincida en todas las CCAA, por lo que en Ceuta y Melilla no se ven los datos en el gráfico de la izquierda, no porque no haya valores, sino porque las pruebas hechas en estas ciudades autónomas son prácticamente insignificante si se comparan con otras CCAA. En cambio, al poner el número de pruebas por cada mil habitantes, si se observan los datos, ya que hemos cogido un rango menor.
+
+Este conjunto de gráficos nos muestra, por un lado, el número de PCR’s que se han realizado en cada comunidad autónoma en cada mes; y la otra, nos muestra el número de PCR’s por cada mil habitantes.
+
+Si miramos la tabla de la cantidad de PCR’s realizadas, en primer lugar, se observa claramente como la cantidad pruebas realizadas en la “segunda ola” (en los últimos meses del año) es mucho mayor que el número de pruebas realizadas en la primera. Esto se debe a que, en la primera ola, el virus llegó cuando nadie lo esperaba, y la cantidad de recursos estaba muy limitado, es más, el sistema sanitario se colapsó.
+
+También, debemos destacar que el número de pruebas realizadas en las comunidades de Madrid, Cataluña y Andalucía es mayor que las realizadas en el resto de CCAA. Cabe recalcar que la población de dichas comunidades es mucho mayor.
+
+No obstante, si observamos el segundo conjunto de gráficos, la cantidad de pruebas realizadas en relación a la cantidad de habitantes que hay en cada comunidad, se iguala mucho más. En la “primera ola” la cantidad de pruebas están bastante igualadas en la mayoría de CCAA, sin embargo, donde se muestran más diferencias es en la “segunda ola”.
+
+En la “segunda ola” Madrid ya no tiene unos datos tan escandalosos, los datos de Navarra y La Rioja se disparan. Por otro lado, también destacan otras comunidades como Aragón, Cantabria, Cataluña y Asturias. Las Comunidades con menos pruebas realizadas, serían Andalucía (el número de pruebas es altísimo pero comparado con su población es bajo), Valencia o Canarias. 
 
 
+
+```{r}
+C_M <- dfCCAA %>% filter(CCAA %in% c("Melilla", "Ceuta"))
+C_M <- C_M %>% select(dia, mes, año, CCAA, PCR, TEST_ANTICUERPOS)
+C_M <- C_M %>% pivot_longer(5:6, names_to = "Prueba", values_to= "N.prueba")
+
+CeuMel <- C_M %>% group_by(CCAA, mes, Prueba) %>% summarise(Total = sum(N.prueba)) %>% filter(Prueba == "PCR") %>% filter(mes != "11")
+
+
+graficoC_M <- ggplot(CeuMel, aes(mes, Total, fill = CCAA)) + scale_fill_brewer(palette = "Reds") + geom_col(position = "dodge") + labs(x = "Meses", y = "Núm. pruebas PCR", title = "PCR's mensuales Ceuta y Melilla") + theme_bw() + theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r out.width="80%", out.height="90%"}
+library(plotly)
+ggplotly(graficoC_M)
+```
+
+Si dejaramos las escalas libres para Ceuta y Melilla, vemos como el nivel de PCR's ha incrementado a lo largo de los meses, de marzo ha octubre hubo un aumento de 55.146 pruebas en Melilla, no obstante, en ambos gráficos estas ciudades autónomas presentan un número de pruebas bajo, cabe decir, no obstante, que el número de habitantes aquí es menor que en otras CCAA, por tanto, resulta lógico que las pruebas realizadas (sin tener en cuenta los datos relativos) sean menores.
+
+
+### 6.4 Comparación, pruebas PCR y test anticuerpos
+
+```{r pruebasCCAA}
+dfb <- dfCCAA %>% select(dia, mes, año, cod_ine, CCAA, PCR, TEST_ANTICUERPOS)
+
+Tpruebasl <- dfb %>% pivot_longer(cols = 6:7, names_to = "Prueba", values_to = "Total")
+
+mediap <- Tpruebasl %>% group_by(Prueba) %>%  summarise(media = mean(Total))
+
+
+grafico2 <- ggplot(mediap, aes(Prueba, media, fill = Prueba)) +  scale_fill_brewer(palette="Spectral") + geom_col() + labs(y = "Media pruebas",  title = "Comparación: Número de pruebas (totales) medias", caption = "Elaboración propia") + scale_y_continuous(labels=function(n){format(n, scientific = FALSE)}) + geom_text(aes(y=media, label = media), position = position_dodge(width = 0.8), size = 3.2, vjust=3, col = "Black") + xlab(NULL) +  theme_classic() + theme(legend.position = "none") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r echo=FALSE, eval=TRUE}
+grafico2
+```
+
+A la vista del gráfico se comprueba como el número de PCRs es más significativo, se utiliza diariamente más que los tests rápidos, para detectar los positivos en Covid-19. 
+
+Una de las causas principales de ello, es porque las PCR's ('Reacción en Cadena de la Polimerasa') son más fiables, permiten detectar y cuantificar el virus. Mientras que el test rápido sirve para detectar si la persona ha estado contagiada, en presencia o no de anticuerpos. 
+
+```{r}
+maxP <- dfCCAA %>% select(dia, mes, cod_ine, PCR) %>% filter(mes != "4")
+maxp <- maxP %>% slice_max(PCR, n=1) #El dia que más pruebas PCR se hicieron fue el día 5 del 11 en Cataluña, concretamente se hicieron: 2.792.707
+maxp <- maxp %>% rename(N.Pruebas = "PCR")
+maxp <- maxp %>% mutate(Tipo_Prueba =  case_when(N.Pruebas == 2792707 ~ "PCR"))
+
+#Haremos lo mismo para los otros tipos de prueba y para obtener el mínimo, por lo que creemos que el código no es necesario mostrarlo.
+```
+
+```{r echo=FALSE, eval=TRUE}
+maxAC <- dfCCAA %>% select(dia, mes, cod_ine, TEST_ANTICUERPOS) %>% filter(mes != "4")
+
+maxac <- maxAC %>% slice_max(TEST_ANTICUERPOS, n=1) #Máximo de pruebas de antigenos fue el día 5 del 11 en Andalucía con 490.969
+
+maxac <- maxac %>% rename(N.Pruebas = "TEST_ANTICUERPOS")
+maxac <- maxac %>% mutate(Tipo_Prueba =  case_when(N.Pruebas == 490969 ~ "TEST_ANTICUERPOS"))
+```
+
+```{r echo=FALSE, eval=TRUE}
+maxO <-dfp %>%
+  separate(Fecha, c("año","mes","dia"), sep = "-") %>%                 relocate(año, .after=dia) %>%
+  relocate(dia, .before =mes) %>% select(dia, mes, cod_ine, OTROS_TESTS) %>%  filter(mes != "4") %>% filter(cod_ine != "0")
+maxo <- maxO %>% slice_max(OTROS_TESTS, n=1) #Máximo de "otras puebas"  fue el día 5 del 11 en Andalucía con 1.048.632
+
+maxo <- maxo %>% rename(N.Pruebas = "OTROS_TESTS")
+maxo <- maxo %>% mutate(Tipo_Prueba =  case_when(N.Pruebas == 1048632 ~ "OTROS_TESTS"))
+```
+
+```{r}
+#PREPARACIÓN DE LAS TABLAS
+#Juntar las tablas.
+tabla <- rbind(maxo, maxac,maxp)
+
+#Exporto esta tabla:
+rio::export(tabla, here::here("datos", "tablamax.csv"))
+tabla <- rio::import(here::here("datos", "tablamax.csv"))
+
+tabla <- tabla %>% mutate(CCAA = case_when(cod_ine == 1 ~"Andalucia",   cod_ine == 9 ~ "Cataluña")) %>% select(dia, mes, CCAA, Tipo_Prueba, N.Pruebas)
+
+#Repetimos todo el proceso para hacer el mínimo
+```
+
+```{r eval=TRUE, echo=FALSE}
+minP <- dfCCAA %>% select(dia, mes, cod_ine, PCR) %>% filter(mes != "4")
+minp <- minP %>% slice_min(PCR, n=1) #El dia que más pruebas PCR se hicieron fue el día 5 del 11 en Cataluña, concretamente se hicieron: 2.792.707
+minp <- minp %>% rename(N.Pruebas = "PCR")
+
+minp <- minp %>% mutate(Tipo_Prueba =  case_when(N.Pruebas == 649 ~ "PCR"))
+
+minAC <- dfCCAA %>% select(dia, mes, cod_ine, TEST_ANTICUERPOS) %>% filter(mes != "4")
+
+minac <- minAC %>% slice_min(TEST_ANTICUERPOS, n=1) #Máximo de pruebas de antigenos fue el día 5 del 11 en Andalucía con 490.969
+
+minac <- minac %>% rename(N.Pruebas = "TEST_ANTICUERPOS")
+minac <- minac %>% mutate(Tipo_Prueba =  case_when(N.Pruebas ==
+1983 ~ "TEST_ANTICUERPOS"))
+
+minO <-dfp %>%
+  separate(Fecha, c("año","mes","dia"), sep = "-") %>%                 relocate(año, .after=dia) %>%
+  relocate(dia, .before =mes) %>% select(dia, mes, cod_ine, OTROS_TESTS) %>%  filter(mes != "4") %>% filter(cod_ine != "0")
+mino <- minO %>% slice_min(OTROS_TESTS, n=1) #Máximo de "otras puebas"  fue el día 5 del 11 en Andalucía con 1.048.632
+
+mino <- mino %>% rename(N.Pruebas = "OTROS_TESTS")
+mino <- mino %>% mutate(Tipo_Prueba =  case_when(N.Pruebas == 0 ~ "OTROS_TESTS"))
+
+```
+
+```{r eval=TRUE, echo=FALSE}
+tablamin <- rbind(mino, minac ,minp)
+
+#Exporto esta tabla:
+rio::export(tablamin, here::here("datos", "tablamix.csv"))
+tablamin <- rio::import(here::here("datos", "tablamix.csv"))
+
+tablamin <- tablamin %>% mutate(CCAA = case_when(cod_ine == 13 ~ "Madrid",  cod_ine == 9 ~ "Cataluña", cod_ine == 4 ~ "I.Baleares")) %>% select(dia, mes, CCAA, Tipo_Prueba, N.Pruebas)
+```
+
+```{r}
+#Paso final para las tablas
+library(flextable)
+
+ftmin <- flextable(head(tablamin), col_keys = c("dia", "mes", "CCAA", "Tipo_Prueba", "N.Pruebas"))
+
+ftmax <-  flextable(head(tabla), col_keys = c("dia", "mes", "CCAA", "Tipo_Prueba", "N.Pruebas"))
+```
+
+<br>
+
+<center><FONT COLOR="Blue">**¿Cuál fue el día en el que menos pruebas se hicieron?**</FONT></center>
+```{r echo=FALSE, eval=TRUE, out.width="80%"}
+ftmin
+```
+
+<br>
+
+<center><FONT COLOR="Blue">**Y, ¿Cuál fue el día en el que más pruebas se hicieron?**</FONT></center>
+
+```{r echo=FALSE, eval=TRUE, out.width="80%"}
+ftmax
+```
+
+<br>
+*Cabe tener en cuenta que los datos van desde el 23 de marzo hasta el 5 de noviembre.
+
+### 6.5 Análisis de casos según las **provincias**
+
+```{r}
+#Preparando los datos para que salga el mapa.
+library(rio)
+library(tidyverse)
+
+
+Provincias <- rio::import("https://github.com/perezp44/LAU2boundaries4spain/blob/master/data/Provincias.rda?raw=true")
+
+
+dfPROV <- dfPROV %>% mutate(Total_x_cap = Totalxcap*100)
+dfPROV <- dfPROV %>% select(provincia, Cod, Poblacion, Total, Total_x_cap) %>% arrange(Cod)
+#names(Provincias)
+
+
+library(sf)
+
+canarias <- Provincias %>% filter(INECodProv %in% c(35,38))
+
+peninsula <- Provincias %>% filter( !(INECodProv %in% c(35, 38)))
+
+my_shift <- st_bbox(peninsula)[c(1,2)]- (st_bbox(canarias)[c(1,2)]) + c(-2.4, -1.1)
+
+canarias$geometry <- canarias$geometry + my_shift
+
+st_crs(canarias)  <- st_crs(peninsula)
+
+peninsula_y_canarias <- rbind(peninsula, canarias)
+
+
+
+p <- ggplot(texto = "provincia" ) + geom_sf(data = peninsula_y_canarias)
+
+
+Tabla <- full_join(peninsula_y_canarias, dfPROV, by = c("INECodProv" = "Cod"))
+
+
+Tabla1 <- Tabla %>% select(provincia, INECodProv, Total_x_cap, geometry)
+
+provincias_point <- st_centroid(Tabla1)
+provincias_points <- cbind(Tabla1, st_coordinates(st_centroid(Tabla1$geometry)))
+
+
+mapa <- p + geom_sf(data = peninsula_y_canarias, fill = NA) +
+    geom_sf(data = provincias_points, aes(geometry = geometry, fill = Total_x_cap)) + scale_fill_viridis_c(direction = -1, option = "inferno", name = "Contagios x hab (%)", alpha = .6) + labs(title = "Contagios relativos según provincia y población") + theme(plot.title = element_text(hjust = 0.7, face = "bold", color = "Black")) + geom_text(data = provincias_points, aes(X, y=Y, label = provincia), color = "Black", fontface = "bold", check_overlap = TRUE, size = 2.5) +  theme_minimal() + theme(axis.text.x = element_blank(), axis.text.y = element_blank()) + labs(x = NULL, y=NULL)
+
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="100%"}
+mapa
+```
+
+## Es importante considerar los datos de manera relativa {.tabset}
+
+### <FONT COLOR="FF4D00">**Provincias con más casos según población**</FONT>
+
+```{r}
+#Teniendo en cuenta la población:
+
+dfTrelp <- dfTrel %>% mutate(Porcentaje = Totalxcap*100)
+
+
+graficoB <- ggplot(dfTrelp, aes(forcats::fct_reorder(provincia, Porcentaje), Porcentaje)) +
+  geom_col(aes(fill = Porcentaje)) +
+  theme(axis.text.x = element_text(angle=90, vjust=0.6), panel.background = NULL) +
+  scale_fill_viridis_c(option = "inferno", name = "Contagios per capita", alpha = 0.8, begin = 0.3, end = 0.7, direction = -1, guide = guide_colorbar( direction = "horizontal", barheight = unit(2, units = "mm"), barwidth = unit(50, units = "mm"), draw.ulim = F, title.position = 'top', title.hjust = 0.5, label.hjust = 0.5)) +
+  theme(legend.text = element_text(size = 7)) +
+  labs(title = "Contagios totales según provincia", subtitle = "Y en relación al número de habitantes") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5)) + labs(x = NULL, y = NULL) + theme(legend.position = "bottom")
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="80%"}
+graficoB
+```
+
+### <FONT COLOR="FF4D00">**Treemapify**</FONT>
+
+Si relacionamos el número de contagios totales por el número de habitantes; vemos que la provincia con más contagios es Navarra, seguida de Huesca y Burgos. Madrid sigue siendo una de las provincias cabeceras en cuanto a contagios.
+Al contrario, las provincias que más destacan por menor número de casos son las provincias canarias Tenerife y Las Palmas.
+
+```{r}
+library(treemapify)
+
+ggplot(dfTrelp, aes(area = Porcentaje, fill = Porcentaje, label = provincia)) +
+  geom_treemap() +
+  geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
+                    grow = FALSE) +
+  scale_fill_viridis_c(option = "inferno", name = "", alpha = 0.8, begin = 0.3, end = 0.7, direction = -1,
+                       guide = guide_colorbar( title = "% casos según población", direction = "horizontal", barheight = unit(2, units = "mm"),
+                                               barwidth = unit(50, units = "mm"), draw.ulim = F,
+                                               title.position = 'top', title.hjust = 0.5, label.hjust = 0.5)) +
+  theme(legend.position = "bottom") + scale_x_continuous(labels=function(n){format(n, scientific = FALSE)}) +
+  labs(title = "Provincias con mayor número de casos según su población (en %)",
+       subtitle = "Se ha calculado el Total de casos entre la pobación y multiplicado por 100 para sacar el porcentaje",
+       caption = "Los últimos datos corresponden al 11-11-2020") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.subtitle = element_text(hjust = 0.5))
+
+```
+
+
+### <FONT COLOR="FF4D00">**Una comparación**</FONT>
+
+Dado que es importante tener en cuenta los casos de manera relativa, aquí hemos querido comparar el número de provincias con más casos teniendo en cuenta el número de habitantes que hay en cada una de estas y sin tener en cuenta la población. Como era esperable y a la vista del gráfico, observamos que resultados difieren al considerar o no la población
+
+```{r}
+
+dfM <- dfTrel %>% select(provincia, Total) %>% arrange(desc(Total))
+
+dfM <- dfM %>% filter(provincia %in% c("Madrid", "Barcelona", "Murcia", "Sevilla", "Zaragoza"))
+
+graficoA <- ggplot(dfM, aes(forcats::fct_reorder(provincia, Total), Total)) +
+  geom_col(aes(fill = Total)) +
+  theme(panel.background = NULL) +
+  scale_y_continuous(labels=function(n){format(n, scientific = FALSE)})
+
+graficoA <- graficoA + geom_text(aes(y=Total, label = Total), position = position_dodge(width = 0.9), size = 3.2, vjust=2, col = "White") + labs(x = NULL, y = NULL, title = "5 provincias con más contagios totales") + theme(plot.title = element_text(hjust = 0.5))
+
+dfMb <- dfTrel %>% select(provincia, Totalxcap) %>% arrange(desc(Totalxcap))
+
+dfMb <- dfMb %>% filter(provincia %in% c("Navarra", "Huesca", "Burgos", "Valladolid", "Zaragoza"))
+
+graficoA2 <- ggplot(dfMb, aes(forcats::fct_reorder(provincia, Totalxcap), Totalxcap)) +
+  geom_col(aes(fill = Totalxcap)) +
+  theme(panel.background = NULL) +
+  scale_y_continuous(labels=function(n){format(n, scientific = FALSE)})
+
+graficoA2 <- graficoA2 + geom_text(aes(y=Totalxcap, label = Totalxcap), position = position_dodge(width = 0.3), size = 2, vjust=3, col = "White") + labs(x = NULL, y = NULL, title = "5 provincias con más contagios en función de la población") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="100%"}
+library(patchwork)
+graficoA / graficoA2
+```
+
+## 7. Estudio sobre el Covid en la **Comunidad Valenciana**
+
+Siguiendo nuestro análisis sobre la Covid-19, en este apartado nos centraremos en analizar algunos elementos destaclabes de la pandemía en la Comunidad Valenciana.
+
+### 7.1 Contagios en la Comunidad Valenciana.
+
+  ```{r echo=FALSE, eval=FALSE}
+dfCV <- dfrel %>% filter(provincia %in% c("Valencia", "Alicante", "Castellon"))
+```
+
+```{r, echo=FALSE, eval=FALSE}
+graficoCV <- ggplot(dfCV, aes(mes, Total_cap, color = provincia)) + geom_line() + geom_point() + theme_light() + scale_y_continuous(labels=function(n){format(n, scientific = FALSE)}) + labs(title = "Ev. contagios Com.Valenciana en función de sus habitantes", caption = "Datos del Instituto de Salud Carlos III", x = "Meses", y = "Contagios per capita") +  theme(plot.title = element_text(hjust = 0.5, face = "bold", color = "Coral")) + scale_x_continuous(breaks = seq(0, 12, 1))
+ggplotly(graficoCV)
+```
+
+```{r out.width="90%"}
+
+dfrelb <- dfgg %>% mutate(Total_cap = (Num/Poblacion))
+
+dfTrelx <- dfrelb %>% mutate(Totalxcap = (Total_cap*100)) %>% filter(provincia %in% c("Castellon", "Valencia", "Alicante"))
+
+dfTrelx <- transform(dfTrelx, mes = as.numeric(mes))
+
+a <- ggplot(data = dfTrelx, aes(mes, Num, group=provincia, color = provincia)) + geom_line() + geom_point() + theme_minimal()   + labs(y= "Número de contagios", y = "Meses", caption = "Elaboración propia") + theme(plot.title = element_text(hjust = 0.5)) + scale_x_continuous(breaks = seq(1, 11, 1))
+
+a + transition_reveal(mes) + labs(title="NÚMERO DE CASOS EN LA COMUNIDAD VALENCIANA. Mes: {as.integer(frame_along)}")
+```
+
+Centrándonos en las provincias de la Comunidad Valenciana, se puede observar que Alicante es la que menos Contagios tiene de las tres, luego iría Castellón y Valencia. Pero las tres, tienen una buena tasa de contagios respecto al resto de provincias, ya que están entre las 11 provincias con menos contagios de toda España. 
+
+### 7.2 Ingresados en Sept-Oct-Nov por Covid. 
+
+```{r}
+datos_CV <- datos_CCAA %>%
+filter(cod_ine == 10) %>%
+relocate(cod_ine, .before=Dia) #Datos para la Comunitat Valenciana.
+datos_CV_S_N<- datos_CV %>% filter (Mes == "09"| Mes == "10"| Mes == "11")
+grafico_CV <- ggplot(datos_CV_S_N , aes(Dia , `Total Pacientes COVID ingresados`, group=Mes, color= Mes))  + geom_line() + labs(title = " Evolución de pacientes ingresados por covid en la Comunidad Valenciana", subtitle = "Desde el 1 Septiembre hasta Noviembre 30", caption = "Datos repositorio COVID19")
+grafico_CV
+```
+
+```{r echo=FALSE, eval=FALSE}
+grafico_b <- ggplot(datos_CV_S_N, aes(Dia, `Altas Ult24h`,   fill = Mes )) +  geom_bar(stat = "identity")+ labs(title = "Número de pacientes dados de alta por COVID en la Comunidad Valenciana al día")+ labs(subtitle = "Desde el 1 Septiembre hasta Noviembre 30")
+
+library(plotly)
+ggplotly(grafico_b)
+#Lo ocultamos porque no nos gusta como queda.
+```
+
+La evolución de los pacientes ingresados por COVID en la segunda ola, han evolucionado de manera similar a la evolución de contagios.
+
+Podemos ver, como en septiembre el número de pacientes estaba bastante controlado, pero cuando llegó el mes de octubre, fue cuando los hospitales sufrieron un repunte total de los pacientes ingresados, que durante el mes de noviembre aumentó todavía más si cabe.
+
+En noviembre los datos se volvieron altamente peligrosos, ya que los hospitales de la Comunidad estaban cerca de colapsarse como ya sucedió en la primera ola. 
+
+La cresta de esta ola, llegó el 18 de noviembre donde habían más de 1800 ingresados por coronavirus en la Comunidad Valenciana.
+
+## Pruebas realizadas {.tabset}
+
+### <FONT COLOR="FF4D00">**Tipos de pruebas**</FONT>
+
+<br>
+
+La prueba más repetida en nuestra comunidad es sin ninguna duda, la prueba PCR, seguida de la prueba de anticuerpos. En todos los meses recogidos, la cantidad de pruebas PCR es muy superior a la cantidad del resto de pruebas.
+
+También podemos ver, que el en el mes de septiembre se han realizado más pruebas que en los meses de julio y agosto.
+Cabe destacar que, en el mes de julio, se realizaron más pruebas de anticuerpos que en el resto de los meses. 
+
+Por último, se ve una clara evolución al alza de otros tests, esto se da gracias a que la prueba de antígenos cada vez es más común debido a su eficacia y a que la realización de ella es mucho más barata que las PCR.
+
+```{r}
+cv <- dfp %>% filter(CCAA == "Comunidad Valenciana")
+cv  <- cv %>%
+  separate(Fecha, c("año","mes","dia"), sep = "-") %>%                 relocate(año, .after=dia) %>%
+  relocate(dia, .before =mes)
+
+
+cv <- cv %>% filter (mes == "07"| mes == "08"| mes == "09") %>% select(dia, mes, PCR, TEST_ANTICUERPOS, OTROS_TESTS)
+
+cvl <- cv %>% pivot_longer(3:5, names_to = "Pruebas", values_to = "N.prueba")
+
+#Para calcular en la Comunidad Valenciana que tipo de pruebas se han hecho más durante los meses de julio, agosto y septiembre.
+
+Csep <- cvl %>% group_by(mes, Pruebas) %>% summarise(Total = sum(N.prueba)) %>% filter(mes == "09")
+
+S <- ggplot(Csep, aes("", Total, fill = Pruebas)) + geom_bar(stat = "identity", color="white") + geom_text(aes(label=Total), position = position_stack(vjust=0.5), color = "white", size = 2) + coord_polar(theta = "y") + scale_fill_manual(values=c("salmon","steelblue","orange","gray")) + theme_void() + labs(title="septiembre") + theme(plot.title = element_text(hjust = 0.5))
+#Igual para julio y agosto
+```
+
+```{r}
+
+Cjul <- cvl %>% group_by(mes, Pruebas) %>% summarise(Total = sum(N.prueba)) %>% filter(mes == "07")
+
+J <- ggplot(Cjul, aes("", Total, fill = Pruebas)) + geom_bar(stat = "identity", color="white") + geom_text(aes(label=Total), position = position_stack(vjust=0.5), color = "white", size = 2) + coord_polar(theta = "y") + scale_fill_manual(values=c("salmon","steelblue","orange","gray")) + theme_void() + labs(title="julio") + theme(plot.title = element_text(hjust = 0.5)) + theme(legend.position = "none")
+
+Cagost <- cvl %>% group_by(mes, Pruebas) %>% summarise(Total = sum(N.prueba)) %>% filter(mes == "08")
+
+A <- ggplot(Cagost, aes("", Total, fill = Pruebas)) + geom_bar(stat = "identity", color="white") + geom_text(aes(label=Total), position = position_stack(vjust=0.5), color = "white", size = 2) + coord_polar(theta = "y") + scale_fill_manual(values=c("salmon","steelblue","orange","gray")) + theme_void() + labs(title="agosto") + theme(plot.title = element_text(hjust = 0.5)) + theme(legend.position = "none")
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="80%"}
+library(patchwork)
+J +  A + S
+```
+
+### <FONT COLOR="FF4D00">**PCR's según  mes**</FONT>
+
+```{r}
+
+C_V <- dfCCAA %>% filter(CCAA == "C.Valenciana")
+C_V <- C_V %>% select(dia, mes, año, CCAA, PCR, TEST_ANTICUERPOS)
+C_V <- C_V %>% pivot_longer(5:6, names_to = "Prueba", values_to= "N.prueba")
+
+CVlcna <- C_V %>% group_by(mes, Prueba) %>% summarise(Total = sum(N.prueba)) %>% filter(Prueba == "PCR") %>% filter(mes != "11")
+
+graficoC_V <- ggplot(CVlcna, aes(mes, Total, fill = "Orange"))  + geom_col(position = "dodge") + labs(x = "Meses", y = "Núm. pruebas PCR", title = "PCR's mensuales C.Valenciana", subtitle =  "Meses abril-octubre") + theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + theme(plot.subtitle = element_text(hjust = 0.5)) + theme(legend.position = "none") + theme(plot.title = element_text(hjust = 0.5)) + scale_y_continuous(labels=function(n){format(n, scientific = FALSE)})
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="75%"}
+library(plotly)
+ggplotly(graficoC_V, tooltip = c("mes", "Total"), width= 450)
+```
+En este gráfico se muestran las PCR's **acumuladas**
+
+La evolución mensual de PCR’s en la Comunidad Valenciana, demuestra que la cantidad de pruebas realizadas en la segunda ola, es mucho mayor que en la primera; esto se debe a que en la primera ola estábamos escasos de recursos. 
+
+
+```{r echo=TRUE, eval=FALSE}
+#Hemos hecho este gráfico pero no sale cuando le damos a Knit.
+library(highcharter)
+
+C_vf <- C_V %>% filter(mes != "11") %>% filter(mes != "4")  %>% group_by(mes, Prueba) %>% summarise(Total = sum(N.prueba))
+
+hchart(C_vf, "column", hcaes(x = mes, y = Total, group = Prueba))  %>%  hc_add_theme(hc_theme_gridlight())  %>%   hc_title(
+    text = "<b>NÚMERO DE PRUEBAS SEGÚN TESTS Y MESES EN LA COMUNIDAD VALENCIANA </b>",
+    margin = 20,
+    align = "center",
+    style = list(color = "#22A884"))
+
+#*Los valores de este gráfico son la suma total de las pruebas realizadas en un mes concreto, los datos ofrecidos mostraban las pruebas realizadas por semanas durante cada mes.
+```
+
+
+## 8. Algunas cuestiones sobre el impacto económico {.tabset}
+
+### <FONT COLOR="FF4D00">**¿Qué cuestiones?**</FONT>
+
+Por último, en este apartado nos gustaría comentar cual ha sido el efecto de la Covid-19, en algunos ámbitos económicos, en concreto, como ha afectado al mercado de trabajo, al desempleo, en diferentes países europeos. Además de algunas cuestiones sobre el PIB, el cual, como era de esperar ha bajado ddebido a la actual crisis sanitaria.  
+
+Para mostrar esto, hemos cogido datos del Eurostat. Este BREVE análisis se dividirá en:
+
+- Primeramente un mapa con el % de parados que había en los diferentes países de la Unión Europea, durante el mes de abril, en plena pandemia (y confinamineto de muchos de estos países)
+
+- Seguidamente compararemos en los diferentes meses como ha evolucionado el paro en 5 países europeos, estos son: Francia, Portugal, Italia, España y como curiosidad, Suecia, ya que es el único país europeo en el que no habido un confinamiento estricto. 
+
+- Por último, centrados en España, podremos observar como el paro ha afectado ha afectado de manera diferente dependiendo del género. Presentando un % de paro mayor las muejeres que los hombres. 
+
+En cuanto al PIB, considerando el año base en 2015, pretendemos ver el efecto para Francia, Italia, España y Suecia del:
+
+- PIB a precios de mercado.
+- Exportaciones de bienes y servicios.
+- Importaciones de bienes y servicios.
+
+
+### <FONT COLOR="FF4D00">**DESEMPLEO**</FONT>
+
+Con el fin de analizar la situación del mercado laboral tras la crisi del Covid, hemos hecho una serie de mapas-gráficos.
+
+A través del mapa, observamos que en el mes de Abril la tasa armonizada de paro en España se situaba en valores entre 14,3-16,4. Cifras solo superadas por Grecia.
+
+No obstante, cabe destacar que esto no es una situación nueva, es decir, las cifras de paro en España ya eran elevadas antes de la pandemia, al igual que en Grecia, Por lo tanto, no observamos a corto plazo cambios muy significativos entre la proporción de la población ocupada y la desocupada (Población Activa)
+
+En el siguiente gráfico se muestra la evolución de la tasa de paro armonizada para 5 países (España, Francia, Italia, Portugal y Suecia)
+
+Como vemos, la tendencia aunque no muy pronunciada es clara, a excepción de Italia. Aquí primero parece disminuir la tasa de paro y a partir de abril cambia de tendencia y empieza a aumentar. 
+
+En cambio, los demás países analizados y sobretodo en España la tasa de paro aumenta tras la crisis sanitaria. Pasando, por ejemplo, en España de 13,7% en diciembre de 2019 a 16,2% en noviembre de 2020, pasando por un máximo de 16,9% en julio. 
+
+En el último gráfico se muestra como ha afectado en España la tasa de paro en función del género, donde podemos concluir que hay más % de mujeres desempleadas que de hombres.
+
+Finalmente, decir que esta crisis no ha afectado de igual manera que la recesión de 2008,  además de que muchas empresas han tenido que aplicar el ERTE a sus trabajadores y el gobierno ha tenido que adoptar nuevas medidas en torno a esto. [^5]
+
+
+
+```{r echo=FALSE, eval=TRUE}
+library(eurostat)
+library(tidyverse)
+
+#Probando a a
+mapdata_0 <- get_eurostat_geospatial(nuts_level = 0)
+m <- mapdata_0 %>%
+  ggplot(., aes()) +
+  geom_sf(fill="green", color="black", size = 0.1) +
+  theme_minimal() +
+  xlim(c(-30, 44)) +
+  ylim(c(35, 75))
+```
+
+```{r}
+#PREPARANDO LOS DATOS
+paro <- search_eurostat(pattern = "unemployment",
+                             type = "table")
+
+#Hay datos hasta 2020M11, es decir, hasta el mes de noviembre de este año, 2020.
+
+inf_paro <- get_eurostat(id= "teilm020",  time_format = "num")
+
+labelE <- label_eurostat(inf_paro)
+
+country_codes <- unique(mapdata_0$NUTS_ID)
+
+#2020.25 corresponde al año 2020 mes 04 (abril)
+inf_paro_2020 <- inf_paro %>%
+  filter( time == "2020.25") %>%
+  filter(geo %in% country_codes)
+
+inf_paro_2020_mapa <- mapdata_0 %>%
+  right_join(inf_paro_2020) %>%
+  mutate(cat = cut_to_classes(values, n=8, decimals = 1))
+```
+
+ **Mapa de coropletas para el paro**
+
+
+```{r out.width="85%"}
+#CODIGO PARA EL MAPA
+
+ggplot(inf_paro_2020_mapa, aes(fill=cat)) +
+  geom_sf(color = alpha("white", 1/2), alpha= .9) +
+  xlim(c(-20, 44)) +
+  ylim(c(35, 70)) +
+  labs(title = "Tasa armonizada de paro (%)",
+       subtitle = "Abril 2020",
+       caption = "(C) EuroGeographics for the administrative boundaries",
+       fill= "") +
+  theme_classic() +
+  theme(
+    axis.line = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    axis.ticks = element_blank(),
+    plot.background = element_rect(fill = "snow", color = NA),
+    panel.background = element_rect(fill= "snow", color = NA),
+    plot.title = element_text(size = 18, hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    plot.caption = element_text(size = 8, hjust = 1),
+    legend.title = element_text(color = "grey40", size = 8),
+    legend.text = element_text(color = "grey40", size = 7, hjust = 0),
+    legend.position = c(0.93, 0.6),
+    plot.margin = unit(c(0.5,2,0.5,1), "cm")) +
+  scale_fill_brewer(palette= "Paired")
+```
+
+
+**Evolución del paro**
+
+```{r}
+#PREPARANDO LOS DATOS
+#La tasa de paro de España en el mes de abril fue del 15%
+
+#En cambio, en el mes de enero, antes de comenzar la pandemia era de 13.5
+
+#Filtramos para comparar España, Francia, Italia, Portugal y Suiza
+
+Filtros <- inf_paro %>% filter(geo %in% c("ES", "PT", "IT", "FR", "SE"))
+Filtros <- Filtros %>% filter(sex == "T")
+
+library(plotly)
+
+Evparo <- ggplot(Filtros, aes(time, values, color = geo)) + geom_line(size = 1) + geom_point() + labs(y = "Valor (en %)", title = "Evolución de la tasa de paro armonizada (en %)",
+subtitle = "PAÍSES: España, Francia, Italia, Portugal, Suecia", caption ="Datos Eurostat.
+Los datos van desde diciembre 2019 hasta octubre 2020.
+(Cada punto del gráfico indica un mes)") +
+theme_light() +
+theme(plot.title = element_text(size = 18, hjust = 0.5),
+plot.subtitle = element_text(size = 12, hjust = 0.5),
+plot.caption = element_text(size = 8, hjust = 1)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+Evparo <- Evparo + scale_y_continuous(breaks = seq(2, 17, 1))
+```
+
+```{r echo=FALSE, eval=TRUE}
+ggplotly(Evparo, tooltip = c("geo", "values"), width= 850)
+```
+
+**Paro en España, a qué genero ha afectado más?**
+
+```{r}
+#Como ha afectado el paro dependiendo del sexo?
+
+Spain <- inf_paro %>% filter(geo == "ES")
+Spain <- Spain %>% filter(sex %in% c("M", "F"))
+
+
+GraficoSpain <- ggplot(Spain, aes(time, values, color = sex)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(y = "Valor (en %)",
+       title = "Evolución tasa de paro armonizada para España (en %)",
+ subtitle = "Diferenciando por sexo: femenino y masculino", caption ="Datos Eurostat.
+Los datos van desde diciembre 2019 hasta octubre 2020.
+(Cada punto del gráfico indica un mes)") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 18, hjust = 0.5),
+        plot.subtitle = element_text(size = 12, hjust = 0.5),
+        plot.caption = element_text(size = 8, hjust = 1)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  theme(legend.position = "bottom") +
+ theme(legend.direction = "horizontal")
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="85%"}
+library(ggThemeAssist)
+GraficoSpain + theme( 
+    plot.title = element_text(colour = "coral2"), 
+    legend.title = element_text(size = 11, 
+        colour = "aquamarine4"), panel.background = element_rect(fill = NA), 
+    plot.background = element_rect(fill = "aliceblue", 
+        colour = NA), legend.background = element_rect(fill = "aliceblue"))
+```
+
+### <FONT COLOR="FF4D00">**PIB**</FONT>
+
+```{r}
+#Datos del paquete Eurostat:
+library(tidyverse)
+
+library(eurostat)
+
+gdp <- get_eurostat("namq_10_gdp", time_format = "raw", keepFlags = TRUE)
+
+labelgdp <- label_eurostat(gdp, fix_duplicated = TRUE)
+df_names <- names(gdp)
+
+df <- label_eurostat(gdp, code = df_names, fix_duplicated = TRUE)
+
+df <- df %>%
+    select(unit_code, s_adj_code, na_item_code, geo, geo_code, time, values)
+
+#df_bb <- pjpv2020.01::pjp_f_unique_values(df, truncate = TRUE, nn_truncate = 200)
+
+df <- df %>% filter(time >= "2018Q1")
+gdp <- df
+
+
+gdp<- gdp %>% rename (unidad_de_medida =na_item_code)
+
+# a) Gross domestic product at market prices
+gdp_a <-  gdp  %>% filter(unidad_de_medida== "B1GQ") %>% select(-unidad_de_medida)
+
+gdp_a <- gdp_a %>% filter(unit_code == "CLV_I15") %>% filter(s_adj_code == "SCA")
+
+gdp_a <- gdp_a %>% select(-c(unit_code,s_adj_code))
+#Lo mismo para las exportaciones y las importaciones
+
+```
+
+```{r echo=FALSE, eval=TRUE}
+#b)Export of goods and services.
+gdp_b <- gdp  %>% filter(unidad_de_medida== "P6") %>% filter(unit_code == "CLV_I15") %>% filter(s_adj_code == "SCA")
+
+gdp_b <- gdp_b %>% select(-c(unit_code,s_adj_code))
+gdp_b <- gdp_b %>% select(-unidad_de_medida)
+
+#c)Imports of good and services.
+
+gdp_c <-  gdp  %>% filter(unidad_de_medida== "P7") %>% filter(unit_code == "CLV_I15") %>% filter(s_adj_code == "SCA")
+
+gdp_c <- gdp_c %>% select(-c(unit_code,s_adj_code))
+gdp_c <- gdp_c %>% select(-unidad_de_medida)
+
+#d)Gross fixed capital formation
+gdp_d<- gdp  %>% filter(unidad_de_medida== "P51G") %>% filter(s_adj_code == "SCA") %>% filter(unit_code == "CLV_I15")
+
+gdp_d <- gdp_d %>% select(-c(unit_code,s_adj_code))
+gdp_d <- gdp_d %>% select(-unidad_de_medida)
+
+
+#seleccionamos Francia Italia España y SUecia
+
+gdp_pa<- gdp_a %>%  filter (geo=="Italy"|geo=="Sweden"|geo=="France"|geo=="Spain" )
+gdp_pb<- gdp_b %>%  filter (geo=="Italy"|geo=="Sweden"|geo=="France"|geo=="Spain" )
+gdp_pc<- gdp_c %>%  filter (geo=="Italy"|geo=="Sweden"|geo=="France"|geo=="Spain" )
+
+```
+
+```{r}
+library(plotly)
+
+Evgdpa <- ggplot(gdp_pa, aes(time, values,group=geo, color = geo)) + geom_line(size = 1) + geom_point() + labs(y = "Valor (Índices)", title = "Evolución del PIB a precios de mercado (Año base 2015)",
+                                                                                                      subtitle = "PAÍSES: España, Francia, Italia, Portugal, Suecia", caption ="Datos Eurostat.
+Los datos van desde el primer trimestre de 2018 hasta el tercer trimestre del 2020.
+(Cada punto del gráfico indica un trimestre)") +
+    theme_light() +
+    theme(plot.title = element_text(size = 18, hjust = 0.5),
+          plot.subtitle = element_text(size = 12, hjust = 0.5),
+          plot.caption = element_text(size = 8, hjust = 1)) +
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank())
+
+
+#ggplotly(Evgdpa, tooltip = c("geo", "values"))
+``` 
+
+
+```{r echo=FALSE, eval=TRUE}
+Evgdpb <- ggplot(gdp_pb, aes(time, values,group=geo, color = geo)) + geom_line(size = 1) + geom_point() + labs(y = "Valor (Índices)", title = "Evol.   export. de bienes y servicios (A. base 2015)",subtitle = "PAÍSES: España, Francia, Italia, Portugal, Suecia", caption ="Datos Eurostat.
+Los datos van desde el primer trimestre de 2018 hasta el tercer trimestre del 2020.
+(Cada punto del gráfico indica un trimestre)") +
+    theme_light() +
+    theme(plot.title = element_text(size = 18, hjust = 0.5),
+          plot.subtitle = element_text(size = 12, hjust = 0.5),
+          plot.caption = element_text(size = 8, hjust = 1)) +
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank())
+
+
+#ggplotly(Evgdpb, tooltip = c("geo", "values"))
+
+
+Evgdpc <- ggplot(gdp_pa, aes(time, values,group=geo, color = geo)) + geom_line(size = 1) + geom_point() + labs(y = "Valor (en índices)", title = "Evol. imp  bienes y servicios (A.base 2015)",
+                                                                                                               subtitle = "PAÍSES: España, Francia, Italia, Portugal, Suecia", caption ="Datos Eurostat.
+Los datos van desde el primer trimestre de 2018 hasta el tercer trimestre del 2020.
+(Cada punto del gráfico indica un trimestre)") +
+    theme_light() +
+    theme(plot.title = element_text(size = 18, hjust = 0.5),
+          plot.subtitle = element_text(size = 12, hjust = 0.5),
+          plot.caption = element_text(size = 8, hjust = 1)) +
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank())
+
+#ggplotly(Evgdpc, tooltip = c("geo", "values"))
+```
+
+```{r echo=FALSE, eval=TRUE, out.width="90%"}
+library(gridExtra)  #- install.packages("gridExtra")
+
+grid.arrange(Evgdpa, Evgdpb,Evgdpc, nrow= 3)
+```
+
+
+<br>
+
+En estos tres gráficos queremos ofrecer una perspectiva económica de cuál ha sido el  impacto del coronavirus en cuatro países europeos, algunos de los cuales ofrecen diferencias destacables en cuanto a su estructura o composición económica De manera que en estos gráficos se muestra tanto la evolución del PIB a precios de mercado como las exportaciones e importaciones de bienes y servicios, todos ellos en números índices, cuyo año base es 2015 (2015 = 100)
+
+Observando de forma global en los tres gráficos podemos ver que tanto Francia, España e Italia tienen una evolución muy parecida. En cambio, Suecia no sufre tan drásticamente los efectos negativos de la pandemia.
+
+Esto se debe, en parte, a que Suecia no puso un confinamiento restrictivo, durante el primer pico de la pandemia, dado que la incidencia fue mucho menor que en los otros tres países analizados. Optó pues, por la estrategia de 'inmunidad de rebaño" Como resultado, observamos que las cifras de Suecia con mejores que la de otros países de la eurozona, el PIB no cayó tanto en el segundo y tercer trimestre de 2020, se encontraba alrededor de 105 pp. Mientras que en España bajó 15 puntos respecto a su año base.
+
+Además, cabe decir que en el país escandinavo, la digitalización y el teletrabajo ya estaba presente en muchas empresas, a diferencia de otros países, como España, que pilló más de improvisto.
+
+No obstante, sería interesante saber lo que proponen las diferentes autoridades responsables de la política económica para intentar devolver los actuales valores a las cifras que había antes del primer trimestre de 2020. Así como el efecto que tendrá la aplicación de la vacuna sobre las expectativas de la población.
+
+## 9. Conclusión
+
+El contar con una herramienta tan potente como es R, que nos permite manejar datos y utilizarlos para hacer análisis complejos nos ha permitido y facilitado tener una perspectiva más amplia y a la vez concreta de lo que está sucediendo con la actual pandemia de la Covid-19. Por lo que nuestro análisis se ha centrado en esta, tanto a nivel mundial como más concretamente para España y la Comunidad Valenciana. Así como hemos mostrado de manera breve cual ha sido el impacto económico que ha podido tener la pandemia a nivel europeo.
+
+
+Cabe señalar que nos ha resultado muy interesante el hecho de poner manejar los datos a nuestro antojo para intentar resolver ciertas cuestiones que nos planteamos antes de empezar el análisis y así, ofrecer la información de forma más visual a través de gráficos, tablas, mapas y demás. Para obtener estos resultados, hemos tenido que seguir varios pasos, empezando por buscar los datos y hacerlos “tidy” (para utilizar aquello que realmente necesitábamos) Además, decir que existen diferentes paquetes (Covid19, TidyCovid19, ncov19…) que recopilan información sobre el Coronavirus y facilitan la creación de, por ejemplo, mapas.
+
+
+Como indicamos en la introducción, elegimos el tema de la Covid-19 dado que queríamos entender por nuestro pie que era esto que había, prácticamente, paralizado el mundo. Por ello, en el presente informe hemos intentado mostrar curiosidades y datos, con el fin de tener una visión general de cómo ha sido el devenir de la pandemia y su evolución hasta prácticamente el mes de Diciembre. 
+
+
+Por último, cabe comentar algunas cuestiones extraídas tras hacer el análisis. Así pues, es destacable que la segunda ola a nivel de contagios ha sido mucho mayor que la primera ola en la mayoría de países, todo y que gracias a la previa preparación, la saturación del sistema sanitario no ha llegado al nivel de la primera, donde hubo momentos en los que los hospitales parecían estar al borde del colapso. 
+
+
+Asimismo, dado que creemos que para poder comparar los datos es mejor que sean relativos, para el caso de España hemos cogido la población de las provincias y así hemos podido calcular el % de contagios según la población. Además de, por ejemplo, las PCR’s por cada 100 mil habitantes, en las diferentes Comunidades Autónomas, donde destaca Navarra como la que más pruebas ha realizado. 
+
+
+Finalmente decir que al tratarse de un tema actual los datos van evolucionando, cambiando. Por tanto, hay que fijarse en el periodo para el que está hecha cada una de las representaciones.
 
 
 ## Referencias
@@ -873,12 +1901,83 @@ DT::datatable(datos_CCAA_yaltas, filter = 'top',
 Las siguientes páginas web son las que hemos utilizado para la realización del trabajo:
 
 
+- <a href="https://raw.githubusercontent.com/datasets/covid-19/master/data/time-series-19-covid-combined.csv"/target="_blank">https://raw.githubusercontent.com/datasets/covid-19/master/data/time-series-19-covid-combined.csv</a>
+
+
+- <a href= "https://datosmacro.expansion.com/otros/coronavirus/vanuatu
+"/target="_blank">https://datosmacro.expansion.com/otros/coronavirus/vanuatu
+</a>
+
+- <a href="https://raw.githubusercontent.com/datasets/covid-19/master/data/time-series-19-covid-combined.csv"/target="_blank">https://raw.githubusercontent.com/datasets/covid-19/master/data/time-series-19-covid-combined.csv</a>
+
+
+- <a href="https://github.com/datadista/datasets/blob/master/COVID%2019/ccaa_covid19_test_realizados.csv"/target="_blank">https://github.com/datadista/datasets/blob/master/COVID%2019/ccaa_covid19_test_realizados.csv</a>
+
+
+- <a href="https://github.com/datadista/datasets/blob/master/COVID%2019/ccaa_covid19_test_realizados.csv"/target="_blank">https://github.com/datadista/datasets/blob/master/COVID%2019/ccaa_covid19_test_realizados.csv</a>
+
+
+- <a href="https://github.com/joachim-gassen/tidycovid19."/target="_blank">https://github.com/joachim-gassen/tidycovid19.</a>
+
+
+- <a href="https://github.com/perezp44/LAU2boundaries4spain/blob/master/data/Provincias.rda?raw=true"/target="_blank">https://github.com/perezp44/LAU2boundaries4spain/blob/master/data/Provincias.rda?raw=true</a>
+
+
+- <a href="https://raw.githubusercontent.com/datadista/datasets/master/COVID%2019/ccaa_ingresos_camas_convencionales_uci.csv"/target="_blank">https://raw.githubusercontent.com/datadista/datasets/master/COVID%2019/ccaa_ingresos_camas_convencionales_uci.csv</a>
+
+
+- <a href="https://raw.githubusercontent.com/datadista/datasets/master/COVID%2019/ccaa_ingresos_camas_convencionales_uci.csv"/target="_blank">https://raw.githubusercontent.com/datadista/datasets/master/COVID%2019/ccaa_ingresos_camas_convencionales_uci.csv</a>
+
+
+- <a href="https://bookdown.org/yihui/rmarkdown/learnr-start.html"/target="_blank">https://bookdown.org/yihui/rmarkdown/learnr-start.html</a>
+
+
+- <a href="https://bookdown.org/yihui/rmarkdown/learnr-start.html"/target="_blank">https://bookdown.org/yihui/rmarkdown/learnr-start.html</a>
+
+
+- <a href="https://rpubs.com/"/target="_blank">https://rpubs.com/</a>
+
+
+- <a href="https://ugoproto.github.io/ugo_r_doc/pdf/gganimate.pdf"/target="_blank">https://ugoproto.github.io/ugo_r_doc/pdf/gganimate.pdf</a>
+
+
+- <a href="https://www.highcharts.com/blog/tutorials/highcharts-for-r-users/"/target="_blank">https://www.highcharts.com/blog/tutorials/highcharts-for-r-users/</a>
+
+
+- <a href="https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a"/target="_blank">https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a</a>
+
+
+- <a href="https://www.r-bloggers.com/2020/04/tidycovid19-new-visualizations-and-data-on-lifting-of-governmental-measures/?fbclid=IwAR0zyKgZoKYPu0KXdOePT5oj8j5BTe7ilrj0phjZxURgNn-RdzaaXiVMOiE"/target="_blank">https://www.r-bloggers.com/2020/04/tidycovid19-new-visualizations-and-data-on-lifting-of-governmental-measures/?fbclid=IwAR0zyKgZoKYPu0KXdOePT5oj8j5BTe7ilrj0phjZxURgNn-RdzaaXiVMOiE</a>
+
+
+-  <a href="https://estadisticamente.com/paletas-de-colores-en-r/"/target="_blank"/target="_blank">https://estadisticamente.com/paletas-de-colores-en-r/</a> 
+
+
+-  <a href="https://mappinggis.com/2019/07/creacion-de-mapas-con-r-y-ggplot2/"/target="_blank">https://mappinggis.com/2019/07/creacion-de-mapas-con-r-y-ggplot2/</a> 
+
+- <a href="https://gganimate.com/"/target="_blank">https://gganimate.com/</a> 
+
+- <a href="https://gt.rstudio.com/"/target="_blank">https://gt.rstudio.com/</a> 
+- <a href="https://datacy.es/blog/tablas-bonitas-en-r-si-es-posible/"/target="_blank">https://datacy.es/blog/tablas-bonitas-en-r-si-es-posible</a> 
+
+- <a href=" https://rpubs.com/JonathanRzezak/652633
+"/target="_blank">https://rpubs.com/JonathanRzezak/652633</a>  
+
+- <a href="https://www.worldometers.info/coronavirus/"/target="_blank">Worldometers</a> 
+
+- <a href="https://cnecovid.isciii.es/covid19/"/target="_blank">COVID ISCIII</a>  
+
+Además de las páginas web mencionadas, hemos utilizado los tutoriales y slides del curso (link mencionado en: nota de página 1)
+
+Asimismo, como comeNtabamos en la introducción nos hemos inspirado para hacer el presente trabajo en nuestro interés por investigar sobre este tema, el cual es actual, así como por la cantidad de datos y notícias que se transmiten día a día.
+
+Igualmente, para hacer el informe y tener ejemplos (referencias) hemos acudido a los trabajos realizados por los compañeros que cursaron la asignatura el año pasado, los encontramos aquí: <https://github.com/perezp44/tutoriales_intro_DS>
 
 ----------------
 
 <br>
 
-Para acabar este chunk incluiré mi `session info`:
+Para acabar este chunk incluiremos la `session info`:
 
 ```{r}
 sessioninfo::session_info() %>% details::details(summary = 'current session info') 
@@ -888,4 +1987,8 @@ sessioninfo::session_info() %>% details::details(summary = 'current session info
 
 [^2]: Si quieres consultar más información haz click <a href="https://www.mscbs.gob.es/profesionales/saludPublica/ccayes/alertasActual/nCov/documentos/ITCoronavirus.pdf#:~:text=En%20este%20momento%20se%20desconoce,origen%20de%20la%20pandemia./"target="_blank"> aquí</a> 
 
-[^3]: No hemos hecho la evolución hasta la fecha actual, dado que a partir de julio los datos de contagios en fines de semana muestran unos valores de 0 (Un resultado no coherente)
+[^3]: Indicamos el enlace por si se quiere obtener más información al respecto.<a href="https://data.humdata.org/dataset/acaps-covid19-government-measures-dataset"/target="_blank">https://data.humdata.org/dataset/acaps-covid19-government-measures-dataset</a>  
+
+[^4]: No hemos hecho la evolución hasta la fecha actual, dado que a partir de julio los datos de contagios en fines de semana muestran unos valores de 0 (Un resultado no coherente)
+
+[^5]: Aquí dejamos en elance por si se quiere consultar más inf. <a href="https://www.sepe.es/HomeSepe/COVID-19/nuevas-medidas-aplicacion-ERTE-COVID-19-Real-Decreto-ley-30-2020-29-septiembre.html"/target="_blank">SEPE</a>  
